@@ -14,40 +14,24 @@ html, body {
 }
 #message {
     position: absolute;
-    top: 45%; /* 上移一点，让星空留出顶部空间 */
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     color: #fff;
-    font-family: "PingFang SC","Microsoft YaHei",sans-serif;
-    font-size: 2.25vw; /* 原来 4.5vw 缩小约 2 倍 */
+    font-size: 0.9rem;
     font-weight: 300;
     text-align: center;
-    line-height: 1.8;
     opacity: 0;
-    text-shadow: 0 0 12px rgba(255,255,255,0.8);
-    padding: 0 12px;
-    word-break: break-word;
-    white-space: pre-line;
+    line-height: 1.6;
+    text-shadow: 0 0 12px #fff;
 }
-
-#hint {
-    position: absolute;
-    bottom: 20px;
-    width: 100%;
-    text-align: center;
-    color: #fff;
-    font-size: 1.75vw; /* 原来 3.5vw 缩小约 2 倍 */
-    opacity: 0.7;
-    text-shadow: 0 0 8px rgba(255,255,255,0.5);
-}
-
 #hint {
     position: absolute;
     bottom: 50px;
     width: 100%;
     text-align: center;
     color: #fff;
-    font-size: 1rem;
+    font-size: 0.5rem;
     opacity: 0.7;
 }
 </style>
@@ -77,8 +61,8 @@ let floatingHearts = [];
 let clickCount = 0;
 let messageText = [
   "刘思晴，你不用再独自承担一切，<br>无论开心或难过，我都在你身边。<br>每一颗闪烁的星星，都是我对你的心意。<br>我喜欢你，也愿意陪着你，给你温暖和安全感。",
-  "如果可以，我希望每天都这样陪你，看星空、听音乐，哪怕静静地坐着，也觉得幸福。",
-  "所以…我喜欢你 ❤️ 从这一刻起，只想守护你。"
+  "如果可以，我希望每天都这样陪你，<br>看星空、听音乐，哪怕静静地坐着，也觉得幸福。",
+  "所以…我喜欢你 ❤️ <br>从这一刻起，只想守护你。"
 ];
 
 const music = document.getElementById("bgMusic");
