@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>刘思晴的专属星空告白</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, #0a0f2c, #000);
+    font-family: "Microsoft YaHei", sans-serif;
+}
+#message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-family: "PingFang SC","Microsoft YaHei",sans-serif;
+    font-size: 4vw;          /* 响应式字体，手机屏幕自适应 */
+    font-weight: 300;
+    text-align: center;
+    line-height: 1.8;
+    opacity: 0;
+    text-shadow: 0 0 12px rgba(255,255,255,0.8);
+    padding: 0 12px;
+    word-break: break-word;
+}
+#hint {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    color: #fff;
+    font-size: 3.5vw;       /* 小屏字体 */
+    opacity: 0.7;
+    text-shadow: 0 0 8px rgba(255,255,255,0.5);
+}
+
+canvas {
+    display: block;
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+<div id="message"></div>
+<div id="hint">💫 点击屏幕，开启专属星空浪漫音乐 💫</div>
+
+<audio id="bgMusic" loop playsinline preload="auto" muted>
+  <source src="https://cdn.jsdelivr.net/gh/huqing/river_flows_in_you.mp3" type="audio/mpeg">
+</audio>
+<audio id="clickSound" preload="auto">
+  <source src="https://cdn.jsdelivr.net/gh/huqing/click.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W = window.innerWidth;
+let H = window.innerHeight;
+canvas.width = W;
+canvas.height = H;
+
+window.addEventListener('resize', ()=>{
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
+    treeX = W - 120;
+    treeY = H - 150;
+});
+
+// 星星
+let stars = [];
+for(let i=0;i<200;i++){
+    stars.push({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        size: Math.random()*2,
+        dx: Math.random()*0.5-0.25,
+        dy: Math.random()*0.5-0.25
+    });
+}
+
+// 心形路径
+let heart = [];
+for(let a=0; a<Math.PI*2; a+=0.1){
+    let x = 16*Math.pow(Math.sin(a),3);
+    let y = 13*Math.cos(a)-5*Math.cos(2*a)-2*Math.cos(3*a)-Math.cos(4*a);
+    heart.push({x:x, y:-y});
+}
+
+// 飘落爱心
+let floatingHearts = [];
+
+// 圣诞树装饰
+let treeDecorations = [];
+for(let i=0;i<5;i++){
+    treeDecorations.push({
+        x: Math.random()*60-30,
+        y: Math.random()*50-20
+    });
+}
+let treeX = W - 120;
+let treeY = H - 150;
+
+// 鼠标/手指位置
+let pointer = {x: W/2, y: H/2};
+document.addEventListener('mousemove', e=>{pointer.x=e.clientX; pointer.y=e.clientY;});
+document.addEventListener('touchmove', e=>{pointer.x=e.touches[0].clientX; pointer.y=e.touches[0].clientY;});
+
+// 绘制圣诞树
+function drawChristmasTree(){
+    // 树叶
+    for(let i=0;i<3;i++){
+        ctx.beginPath();
+        ctx.moveTo(treeX, treeY - i*30);
+        ctx.lineTo(treeX - 40 + i*10, treeY + 30 - i*30);
+        ctx.lineTo(treeX + 40 - i*10, treeY + 30 - i*30);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(0,255,0,0.8)';
+        ctx.fill();
+    }
+    // 树干
+    ctx.fillStyle = "#8B4513";
+    ctx.fillRect(treeX-10, treeY+30, 20, 30);
+    // 红色装饰
+    treeDecorations.forEach(d=>{
+        ctx.beginPath();
+        ctx.arc(treeX+d.x, treeY+d.y, 5, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(255,0,0,0.8)';
+        ctx.fill();
+    });
+}
+
+// 绘制动画
+function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    // 星星
+    stars.forEach(s=>{
+        s.x += s.dx;
+        s.y += s.dy;
+        if(s.x<0||s.x>W) s.dx*=-1;
+        if(s.y<0||s.y>H) s.dy*=-1;
+        ctx.beginPath();
+        ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
+        ctx.fillStyle="rgba(255,255,255,0.9)";
+        ctx.shadowColor="#fff";
+        ctx.shadowBlur=8;
+        ctx.fill();
+        // 星星轻微跟随手指
+        s.x += (pointer.x - s.x)*0.0005;
+        s.y += (pointer.y - s.y)*0.0005;
+    });
+
+    // 飘落爱心
+    for(let i=floatingHearts.length-1;i>=0;i--){
+        let h=floatingHearts[i];
+        h.y -= h.speed;
+        h.alpha -= 0.005;
+        ctx.beginPath();
+        ctx.arc(h.x,h.y,h.size,0,Math.PI*2);
+        ctx.fillStyle = `rgba(255,0,0,${h.alpha})`;
+        ctx.fill();
+        if(h.alpha<=0) floatingHearts.splice(i,1);
+    }
+
+    // 圣诞树
+    drawChristmasTree();
+
+    requestAnimationFrame(draw);
+}
+draw();
+
+// 文字
+const messageText=[
+  "刘思晴，你不用再独自承担一切，<br>无论开心或难过，我都在你身边。<br>每一颗闪烁的星星，都是我对你的心意。<br>我喜欢你，也愿意陪着你，给你温暖和安全感。",
+  "如果可以，我希望每天都这样陪你，看星空、听音乐，哪怕静静地坐着，也觉得幸福。",
+  "所以…我喜欢你 ❤️ 从这一刻起，只想守护你。"
+];
+function typeWriter(text,i=0){
+    const msg = document.getElementById("message");
+    if(i<text.length){
+        msg.innerHTML = text.substring(0,i+1);
+        msg.style.opacity = 1;
+        msg.style.textShadow = `0 0 ${8+i/4}px #fff`;
+        setTimeout(()=>typeWriter(text,i+1),40);
+    }
+}
+
+// 点击事件
+let clickCount=0;
+const music = document.getElementById("bgMusic");
+const clickSound = document.getElementById("clickSound");
+const hint = document.getElementById("hint");
+
+canvas.addEventListener("click", ()=>{
+    hint.style.display = "none";
+
+    if(music.paused){
+        music.muted=false;
+        music.play().catch(err=>console.log("播放受限:",err));
+    }
+
+    clickSound.currentTime=0;
+    clickSound.play().catch(err=>console.log("点击音效受限:",err));
+
+    clickCount++;
+    let cx=W/2, cy=H/2;
+
+    if(clickCount===1){
+        // 星光汇聚心形
+        stars.forEach((s,i)=>{
+            s.target = heart[i%heart.length];
+        });
+        // 飘落爱心
+        setInterval(()=>{
+            floatingHearts.push({
+                x:Math.random()*W,
+                y:H,
+                size:5+Math.random()*5,
+                speed:1+Math.random()*1.5,
+                alpha:1
+            });
+        },150);
+        // 星星靠近心形
+        function updateStars(){
+            stars.forEach(s=>{
+                if(s.target){
+                    s.x += (cx + s.target.x*15 - s.x)*0.05;
+                    s.y += (cy + s.target.y*15 - s.y)*0.05;
+                }
+            });
+            requestAnimationFrame(updateStars);
+        }
+        updateStars();
+
+        typeWriter(messageText[0]);
+    }else if(clickCount===2){
+        typeWriter(messageText[1]);
+    }else if(clickCount===3){
+        typeWriter(messageText[2]);
+    }
+});
+</script>
+
+</body>
+</html>
